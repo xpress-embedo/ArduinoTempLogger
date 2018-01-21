@@ -2,21 +2,24 @@ from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+# Option 2
+#import pandas.plotting._converter as pandacnv
+#pandacnv.register()
 
-year = 2018
-
+year = 2018     # For 2018
+'''
 month = input ('Enter Month : ')
 date = input ('Enter Date : ')
 month = int(month)
 date = int(date)
-
+'''
 # Hardcoded Values for Testing Purpose
-# month = 1
-# date = 20
+month = 1
+date = 20
 
 headers = ['Time', 'ADC', 'Temperature']
 filename = '%.2d-%.2d-%.2d.txt' % (month, date, year-2000)
-# print (filename)
+print (filename)
 
 try:
     df = pd.read_table( filename, ',', names=headers,\
@@ -27,15 +30,20 @@ except:
     exit()
 
 FMT = '%H:%M:%S'
+# df['Time'] = df['Time'].astype(str)
 # print (df['Time'].head())
 # print (type(df['Time'][0]))
 df['Time'] = df['Time'].map(lambda x: datetime.strptime(str(x), FMT))
 df['Time'] = df['Time'].map(lambda x: x.replace(day=date, month=month, year=year))
 
-#df['New'] = df['Time'].apply(lambda x: x.to_datetime())
-#df['New'] = df['Time'].apply(lambda x: x.to_pydatetime())
+df['New'] = df['Time'].apply(lambda x: x.to_datetime())
+df['New'] = df['Time'].apply(lambda x: x.to_pydatetime())
 
-plt.plot( df['Time'], df['ADC'])
+# plt.plot( df['Time'], df['ADC'])
+# Option 3
+# dt = [x.to_pydatetime() for x in df['Time']]
+# plt.plot( dt, df['ADC'])
+
 plt.ylim( [0,200])
 plt.gcf().autofmt_xdate()
 plt.show()
