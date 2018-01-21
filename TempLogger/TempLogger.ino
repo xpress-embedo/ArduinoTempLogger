@@ -19,7 +19,7 @@ const int chipSelect = 4;
  * CS - pin 4
  */
 
-/*DS1307*/
+/*DS1307 Object*/
 RTC_DS1307 rtc;
 
 #define FILE_NAME_LEN       13u
