@@ -6,7 +6,7 @@
  </FRAME>
  <MODULE name="VSMDEBUG">
   <PWI>
-   <POPUP w="548" x="18" flags="00000003" y="488" h="200" pid="0" iid="-1">
+   <POPUP w="548" x="18" flags="00000002" y="488" h="200" pid="0" iid="-1">
     <PROPERTIES>
      <ITEM name="Message Column Width">290</ITEM>
      <ITEM name="ShowGrid">No</ITEM>
@@ -101,7 +101,7 @@
      <ITEM name="TopLineAddress">00000020</ITEM>
     </PROPERTIES>
    </POPUP>
-   <POPUP w="395" x="10" flags="0000802b" y="119" h="297" pid="0" iid="9">
+   <POPUP w="395" x="103" flags="0000802b" y="245" h="297" pid="0" iid="9">
     <PROPERTIES/>
    </POPUP>
    <POPUP w="156" x="124" flags="00000001" y="298" h="72" pid="1" iid="14">
@@ -128,7 +128,7 @@
      <ITEM name="nBreakpoints">0</ITEM>
     </PROPERTIES>
    </POPUP>
-   <POPUP w="541" x="238" flags="0000000b" y="43" h="364" pid="2" iid="1">
+   <POPUP w="541" x="238" flags="0000000a" y="43" h="364" pid="2" iid="1">
     <PROPERTIES>
      <ITEM name="Address Column Width">94</ITEM>
      <ITEM name="AutoResize">No</ITEM>
