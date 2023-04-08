@@ -52,7 +52,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QCustomPlot" name="plot" native="true">
+   <widget class="QCustomPlot" name="customPlot" native="true">
     <property name="geometry">
      <rect>
       <x>10</x>
