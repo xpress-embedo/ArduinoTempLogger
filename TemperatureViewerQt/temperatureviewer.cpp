@@ -1,6 +1,16 @@
-
 #include "temperatureviewer.h"
 #include "./ui_temperatureviewer.h"
+#include <QtCharts/QChartView>
+#include <QtCharts/QLineSeries>
+#include <QtCore/QDateTime>
+#include <QtCharts/QDateTimeAxis>
+#include <QtCharts/QValueAxis>
+
+/* Chart Related Objects Starts */
+QLineSeries *series;
+QChartView *chartView;
+// QChart *chart;
+/* Chart Related Objects Finished */
 
 TemperatureViewer::TemperatureViewer(QWidget *parent) : QMainWindow(parent) , ui(new Ui::TemperatureViewer)
 {
@@ -15,6 +25,34 @@ TemperatureViewer::TemperatureViewer(QWidget *parent) : QMainWindow(parent) , ui
     // Add these found com ports to the combo box
     ui->cb_COMP->addItem(port_info.portName());
   }
+
+  // Create a Line Series and the current time and value will be updated
+  // when serial data is received
+  series = new QLineSeries();
+
+  // Create a chart where we append this data
+  QChart *chart = new QChart();
+  chart->legend()->hide();
+  chart->addSeries(series);
+  // chart->createDefaultAxes();
+  chart->setTitle("Simple line chart example");
+
+  QDateTimeAxis *axisX = new QDateTimeAxis;
+  // axisX->setTickCount(10);
+  axisX->setFormat("hh-mm-ss");
+  axisX->setTitleText("Time");
+  chart->addAxis(axisX, Qt::AlignBottom);
+  series->attachAxis(axisX);
+
+  QValueAxis *axisY = new QValueAxis;
+  axisY->setLabelFormat("%i");
+  axisY->setTitleText("Temperature Value");
+  chart->addAxis(axisY, Qt::AlignLeft);
+  series->attachAxis(axisY);
+
+  chartView = new QChartView(chart);
+  chartView->setRenderHint(QPainter::Antialiasing);
+  chartView->setParent(ui->horizontalFrame);
 }
 
 TemperatureViewer::~TemperatureViewer()
@@ -73,6 +111,7 @@ void TemperatureViewer::read_data()
 {
   char data;
   uint8_t temp_adc_count;
+  QDateTime now;
   while( m_serial.bytesAvailable() )
   {
     // Read one byte at a time
@@ -80,7 +119,11 @@ void TemperatureViewer::read_data()
     if( (data != '\r') && (data != '\n') )
     {
       temp_adc_count = data;
+      now = QDateTime::currentDateTime();
+      series->append( now.toMSecsSinceEpoch(), temp_adc_count );
       qDebug() << temp_adc_count;
+      qDebug() << series;
+      chartView->update();
     }
   }
 }
