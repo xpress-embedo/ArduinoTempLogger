@@ -1,16 +1,7 @@
 #include "temperatureviewer.h"
 #include "./ui_temperatureviewer.h"
-#include <QtCharts/QChartView>
-#include <QtCharts/QLineSeries>
-#include <QtCore/QDateTime>
-#include <QtCharts/QDateTimeAxis>
-#include <QtCharts/QValueAxis>
+#include <QDateTime>
 
-/* Chart Related Objects Starts */
-QLineSeries *series;
-QChartView *chartView;
-// QChart *chart;
-/* Chart Related Objects Finished */
 
 TemperatureViewer::TemperatureViewer(QWidget *parent) : QMainWindow(parent) , ui(new Ui::TemperatureViewer)
 {
@@ -25,56 +16,6 @@ TemperatureViewer::TemperatureViewer(QWidget *parent) : QMainWindow(parent) , ui
     // Add these found com ports to the combo box
     ui->cb_COMP->addItem(port_info.portName());
   }
-
-  // Create a Line Series and the current time and value will be updated
-  // when serial data is received
-  series = new QLineSeries();
-  // Test Code Starts
-  /*
-  QDateTime now = QDateTime::currentDateTime();
-  series->append( now.toMSecsSinceEpoch(), 10 );
-  now = now.addSecs(1);
-  series->append( now.toMSecsSinceEpoch(), 11 );
-  now = now.addSecs(1);
-  series->append( now.toMSecsSinceEpoch(), 12 );
-  now = now.addSecs(1);
-  series->append( now.toMSecsSinceEpoch(), 13 );
-  now = now.addSecs(1);
-  series->append( now.toMSecsSinceEpoch(), 14 );
-  */
-  // Test Code Ends
-
-  // Create a chart where we append this data
-  QChart *chart = new QChart();
-  chart->legend()->hide();
-  chart->addSeries(series);
-  // chart->createDefaultAxes();
-  chart->setTitle("Real Time Temperature Visualization");
-
-  // Formatting X Axis
-  QDateTimeAxis *axisX = new QDateTimeAxis;
-
-  // axisX->setTickCount(10);
-  axisX->setFormat("hh:mm:ss");
-  axisX->setTitleText("Time");
-  // Setting Range of 1 day (need to take care of series also)
-  // QDateTime now = QDateTime::currentDateTime();
-  // axisX->setRange( now.toMSecsSinceEpoch(), now.addDays(1).toMSecsSinceEpoch() );
-  chart->addAxis(axisX, Qt::AlignBottom);
-  series->attachAxis(axisX);
-
-  // Formatting Y-Axis
-  QValueAxis *axisY = new QValueAxis;
-  axisY->setLabelFormat("%i");
-  axisY->setTitleText("Temperature Value");
-  axisY->setRange( 0, 255 );
-  chart->addAxis(axisY, Qt::AlignLeft);
-  series->attachAxis(axisY);
-
-  // Setting the Chart View
-  chartView = new QChartView(chart);
-  chartView->setRenderHint(QPainter::Antialiasing);
-  chartView->setParent(ui->horizontalFrame);
 }
 
 TemperatureViewer::~TemperatureViewer()
@@ -142,10 +83,7 @@ void TemperatureViewer::read_data()
     {
       temp_adc_count = data;
       now = QDateTime::currentDateTime();
-      series->append( now.toMSecsSinceEpoch(), temp_adc_count );
       qDebug() << temp_adc_count;
-      // qDebug() << series;
-      chartView->update();
     }
   }
 }

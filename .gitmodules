@@ -1,0 +1,3 @@
+[submodule "TemperatureViewer/QCustomPlot-library"]
+	path = TemperatureViewer/QCustomPlot-library
+	url = git@github.com:leger50/QCustomPlot-library.git
