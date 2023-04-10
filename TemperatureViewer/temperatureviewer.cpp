@@ -45,6 +45,16 @@ TemperatureViewer::TemperatureViewer(QWidget *parent) : QMainWindow(parent) , ui
   // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
   ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 
+  // first we create and prepare a text layout element:
+  QCPTextElement *title = new QCPTextElement(ui->customPlot);
+  title->setText("Temperature Real-Time Plot");
+  title->setFont(QFont("sans", 12, QFont::Bold));
+  // then we add it to the main plot layout:
+  // insert an empty row above the axis rect
+  ui->customPlot->plotLayout()->insertRow(0);
+  // place the title in the empty cell we've just created
+  ui->customPlot->plotLayout()->addElement(0, 0, title);
+
   // Start Timer to Refresh the graph
   QTimer *timer = new QTimer(this);
   connect(timer, &QTimer::timeout, this, &TemperatureViewer::refreshGraph );
