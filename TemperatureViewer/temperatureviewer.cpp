@@ -2,12 +2,14 @@
 #include "./ui_temperatureviewer.h"
 #include <QDateTime>
 
-const qint8 DATA_SIZE = 120u;
+//const qint8 DATA_SIZE = 20;
 
-QList<double> time_axis(DATA_SIZE);           // 120 values
-QList<double> temperature_axis(DATA_SIZE);    // 120 values
+//QList<double> time_axis(DATA_SIZE);           // 120 values
+//QList<double> temperature_axis(DATA_SIZE);    // 120 values
 
-QList<QCPGraphData> time_data(DATA_SIZE);
+QList<double> time_axis;
+QList<double> temperature_axis;
+
 static qint8 temp_data_idx = 0;
 
 TemperatureViewer::TemperatureViewer(QWidget *parent) : QMainWindow(parent) , ui(new Ui::TemperatureViewer)
@@ -24,45 +26,37 @@ TemperatureViewer::TemperatureViewer(QWidget *parent) : QMainWindow(parent) , ui
     ui->cb_COMP->addItem(port_info.portName());
   }
 
-  // Plotting stuff
-  // Test Code Starts
-  /*
-  QList<double> x(101), y(101);     // initialize with entries 0...100
-  for (int i=0; i<101; ++i)
-  {
-    x[i] = i/50.0 - 1; // x goes from -1 to 1
-    y[i] = x[i]*x[i]; // let's plot a quadratic function
-  }
-  ui->customPlot->addGraph();
-  ui->customPlot->graph(0)->setData(x, y);
-  // give axis some labels
-  ui->customPlot->xAxis->setLabel("x");
-  ui->customPlot->yAxis->setLabel("y");
-  // set axes ranges, so we see all data:
-  ui->customPlot->xAxis->setRange(-1, 1);
-  ui->customPlot->yAxis->setRange(0, 1);
-  ui->customPlot->replot();
-  */
-  // Test Code Ends
-
+  // Plotting Stuff
   // Create graph and assign data to it
   ui->customPlot->addGraph();
   // give axis some labels
   ui->customPlot->xAxis->setLabel("Time");
   ui->customPlot->yAxis->setLabel("Temperature");
-  // set axes ranges, so we see all data:
-  ui->customPlot->xAxis->setRange( QDateTime::currentDateTime().toMSecsSinceEpoch(), \
-                                   QDateTime::currentDateTime().addSecs(120).toMSecsSinceEpoch() );
-  ui->customPlot->yAxis->setRange(0, 255);
+  // QColor color("pink");
+  QColor color(40, 110, 255);
+  ui->customPlot->graph(0)->setLineStyle( QCPGraph::lsLine );
+  ui->customPlot->graph(0)->setPen( QPen(color.lighter(50)) );
+  ui->customPlot->graph(0)->setBrush( QBrush(color) );
+
   // configure bottom axis to show date instead of number:
   QSharedPointer<QCPAxisTickerDateTime> date_time_ticker(new QCPAxisTickerDateTime);
   date_time_ticker->setDateTimeFormat("hh:mm:ss");
   ui->customPlot->xAxis->setTicker(date_time_ticker);
 
-  QColor color("pink");
-  ui->customPlot->graph()->setLineStyle( QCPGraph::lsLine );
-  ui->customPlot->graph()->setPen( QPen(color.lighter(200)) );
-  ui->customPlot->graph()->setBrush( QBrush(color) );
+  double now = QDateTime::currentSecsSinceEpoch();
+  // set axes ranges, so we see all data:
+  ui->customPlot->xAxis->setRange( now, now+5);
+  ui->customPlot->yAxis->setRange(0, 255);
+
+  // make left and bottom axes transfer their ranges to right and top axes:
+  connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot->xAxis2, SLOT(setRange(QCPRange)));
+  connect(ui->customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot->yAxis2, SLOT(setRange(QCPRange)));
+
+  // Start Timer to Refresh the graph
+  QTimer *timer = new QTimer(this);
+  connect(timer, &QTimer::timeout, this, &TemperatureViewer::refreshGraph );
+  // Start Timer @ 1 second
+  timer->start(1000);
 }
 
 TemperatureViewer::~TemperatureViewer()
@@ -121,7 +115,7 @@ void TemperatureViewer::read_data()
 {
   char data;
   uint8_t temp_adc_count;
-  QDateTime now;
+  double now = QDateTime::currentSecsSinceEpoch();
 
   while( m_serial.bytesAvailable() )
   {
@@ -130,23 +124,30 @@ void TemperatureViewer::read_data()
     if( (data != '\r') && (data != '\n') )
     {
       temp_adc_count = data;
-      now = QDateTime::currentDateTime();
-      // time_axis.append(now.toMSecsSinceEpoch());
-      // temperature_axis.append(temp_adc_count);
-      // ui->customPlot->graph()->setData( time_axis, temperature_axis);
+      /*
       if( temp_data_idx >= DATA_SIZE )
       {
         temp_data_idx = 0;
       }
-      time_data[temp_data_idx].key = QDateTime::currentDateTime().toMSecsSinceEpoch();
-      time_data[temp_data_idx].value = temp_adc_count;
+      // I am not using the append method
+      time_axis[temp_data_idx] = now;
+      temperature_axis[temp_data_idx] = temp_adc_count;
+      */
+      time_axis.append(now);
+      temperature_axis.append(temp_adc_count);
       temp_data_idx++;
-      qDebug() << temp_adc_count;
-      ui->customPlot->graph()->data()->set(time_data);
-
-      ui->customPlot->replot();
-      ui->customPlot->update();
+      qDebug() << temp_data_idx << temp_adc_count;
     }
+  }
+}
+
+void TemperatureViewer::refreshGraph( void )
+{
+  if( connect_status )
+  {
+    ui->customPlot->graph()->setData( time_axis, temperature_axis);
+
+    ui->customPlot->replot();
   }
 }
 

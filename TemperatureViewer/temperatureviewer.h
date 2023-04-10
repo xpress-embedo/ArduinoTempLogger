@@ -4,6 +4,7 @@
 
 #include <QMainWindow>
 #include <QDebug>
+#include <QTimer>
 #include <QSerialPort>
 #include <QSerialPortInfo>
 
@@ -31,6 +32,7 @@ private:
   Ui::TemperatureViewer *ui;
   bool connect_status = false;
   QSerialPort m_serial;
+  void refreshGraph( void );
 };
 
 #endif // TEMPERATUREVIEWER_H
