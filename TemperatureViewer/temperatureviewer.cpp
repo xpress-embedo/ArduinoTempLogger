@@ -2,7 +2,7 @@
 #include "./ui_temperatureviewer.h"
 #include <QDateTime>
 
-const qint8 SECONDS_SHOW_ON_GRAPH = 20;  // Display 20 seconds on the graph
+const qint8 SECONDS_SHOW_ON_GRAPH = 120;  // Display 120 seconds on the graph
 QList<double> time_axis;
 QList<double> temperature_axis;
 static qint64 temp_data_idx = 0;   // to be used later for x-axis range setting
