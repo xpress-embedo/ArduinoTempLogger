@@ -6,11 +6,13 @@
 #include <QtCharts/QDateTimeAxis>
 #include <QtCharts/QValueAxis>
 
-/* Chart Related Objects Starts */
+/* Chart Related Objects and variables Starts */
 QLineSeries *series;
 QChartView *chartView;
-// QChart *chart;
-/* Chart Related Objects Finished */
+QDateTimeAxis *axisX;
+const qint8 SECONDS_SHOW_ON_GRAPH = 20;  // Display 120 seconds on the graph
+static qint64 startTime;
+/* Chart Related Objects and variables Finished */
 
 TemperatureViewer::TemperatureViewer(QWidget *parent) : QMainWindow(parent) , ui(new Ui::TemperatureViewer)
 {
@@ -51,15 +53,12 @@ TemperatureViewer::TemperatureViewer(QWidget *parent) : QMainWindow(parent) , ui
   // chart->createDefaultAxes();
   chart->setTitle("Real Time Temperature Visualization");
 
-  // Formatting X Axis
-  QDateTimeAxis *axisX = new QDateTimeAxis;
-
-  // axisX->setTickCount(10);
+  // Formatting X Axis (made as global variable)
+  // QDateTimeAxis *axisX = new QDateTimeAxis;
+  axisX = new QDateTimeAxis;
+  axisX->setTickCount(10);
   axisX->setFormat("hh:mm:ss");
   axisX->setTitleText("Time");
-  // Setting Range of 1 day (need to take care of series also)
-  // QDateTime now = QDateTime::currentDateTime();
-  // axisX->setRange( now.toMSecsSinceEpoch(), now.addDays(1).toMSecsSinceEpoch() );
   chart->addAxis(axisX, Qt::AlignBottom);
   series->attachAxis(axisX);
 
@@ -67,7 +66,7 @@ TemperatureViewer::TemperatureViewer(QWidget *parent) : QMainWindow(parent) , ui
   QValueAxis *axisY = new QValueAxis;
   axisY->setLabelFormat("%i");
   axisY->setTitleText("Temperature Value");
-  axisY->setRange( 0, 255 );
+  axisY->setRange( 0, 60 );
   chart->addAxis(axisY, Qt::AlignLeft);
   series->attachAxis(axisY);
 
@@ -111,6 +110,11 @@ void TemperatureViewer::on_btn_ConnectDisconnect_clicked( void )
       ui->cb_COMP->setEnabled(false);
       // Connect Signal and Slots
       connect(&m_serial, SIGNAL( readyRead() ), this, SLOT(read_data() ) );
+
+      startTime = QDateTime::currentSecsSinceEpoch();
+      // Setting Range of 120 seconds (need to take care of series also)
+      QDateTime now = QDateTime::currentDateTime();
+      axisX->setRange( now, now.addSecs(SECONDS_SHOW_ON_GRAPH) );
     }
     else
     {
@@ -132,7 +136,7 @@ void TemperatureViewer::on_btn_ConnectDisconnect_clicked( void )
 void TemperatureViewer::read_data()
 {
   char data;
-  uint8_t temp_adc_count;
+  float temp_value;
   QDateTime now;
   while( m_serial.bytesAvailable() )
   {
@@ -140,11 +144,17 @@ void TemperatureViewer::read_data()
     m_serial.read(&data, 1);
     if( (data != '\r') && (data != '\n') )
     {
-      temp_adc_count = data;
+      // convert adc counts back to the temperature value
+      // temperature = (adc counts * VCC in mV/ADC Resolution)/10mV
+      temp_value = (((uint8_t)data) * 500.0 / 1023.0);
       now = QDateTime::currentDateTime();
-      series->append( now.toMSecsSinceEpoch(), temp_adc_count );
-      qDebug() << temp_adc_count;
-      // qDebug() << series;
+      series->append( now.toMSecsSinceEpoch(), temp_value );
+      qDebug() << data << "," << temp_value;
+      if( (now.toSecsSinceEpoch() - startTime) > SECONDS_SHOW_ON_GRAPH )
+      {
+        axisX->setMax( now );
+        axisX->setMin( now.addSecs((-1)*SECONDS_SHOW_ON_GRAPH));
+      }
       chartView->update();
     }
   }
