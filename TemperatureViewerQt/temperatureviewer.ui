@@ -52,7 +52,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QFrame" name="horizontalFrame">
+   <widget class="QFrame" name="frame">
     <property name="geometry">
      <rect>
       <x>10</x>

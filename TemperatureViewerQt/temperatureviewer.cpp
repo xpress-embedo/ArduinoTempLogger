@@ -73,7 +73,10 @@ TemperatureViewer::TemperatureViewer(QWidget *parent) : QMainWindow(parent) , ui
   // Setting the Chart View
   chartView = new QChartView(chart);
   chartView->setRenderHint(QPainter::Antialiasing);
-  chartView->setParent(ui->horizontalFrame);
+  chartView->setParent(ui->frame);
+  /* This will fit the chart inside the centeral widget
+  https://forum.qt.io/topic/144246/updating-qt-line-series-in-real-time-is-not-working/9?_=1681509117408 */
+  chartView->setMinimumSize( ui->frame->size() );
 }
 
 TemperatureViewer::~TemperatureViewer()
